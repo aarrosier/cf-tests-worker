@@ -1,0 +1,4 @@
+for f in svg/*.svg; do
+  npx wrangler r2 object put "flags-private/$(basename "$f")" --file "$f" --remote
+  sleep 1
+done
