@@ -17,26 +17,28 @@ alex@orion:~/Desktop/Cloudflare/cloudflare_project/cf-tests-worker$ npx wrangler
 Creating bucket 'flags-private'...
 ✅ Created bucket 'flags-private' with default storage class of Standard.
 To access your new R2 Bucket in your Worker, add the following snippet to your configuration file:
-{
-  "r2_buckets": [
-    {
-      "bucket_name": "flags-private",
-      "binding": "flags_private"
-    }
-  ]
-}
+	{
+	  "r2_buckets": [
+	    {
+	      "bucket_name": "flags-private",
+	      "binding": "flags_private"
+	    }
+	  ]
+	}
 
-export default {
-	async fetch(request, env, ctx) {
-		const url = new URL(request.url);
 
-/* 
 
-Extract email 
-Country (cf variable)
-Timestamp
+	export default {
+		async fetch(request, env, ctx) {
+			const url = new URL(request.url);
 
-*/ 
+	/* 
+	
+	Extract email 
+	Country (cf variable)
+	Timestamp
+	
+	*/ 
 		
 		const email = request.headers.get("cf-access-authenticated-user-email") || "unknown";
 		const country = request.cf?.country || "XX";
@@ -45,12 +47,12 @@ Timestamp
 
 
 
-/* 
-
-Match on /secure or /Secure/ 
-Built template literal string with required data... 
-Set relevant headers in response 
-*/ 
+	/* 
+	
+	Match on /secure or /Secure/ 
+	Built template literal string with required data... 
+	Set relevant headers in response 
+	*/ 
 
 
 		if (url.pathname === "/secure" || url.pathname === "/secure/") {
@@ -68,19 +70,19 @@ Set relevant headers in response
 		}
 
 
-/* 
-
-If path is not exactly matching previous conditional... 
-If path name start with /secure   
-Do a split on / and extract the element from 2nd index (country code)
-If 2nd element (country code) exists (?) , make it lowercase else - set to default - to avoid exception
-*/
+	/* 
+	
+	If path is not exactly matching previous conditional... 
+	If path name start with /secure   
+	Do a split on / and extract the element from 2nd index (country code)
+	If 2nd element (country code) exists (?) , make it lowercase else - set to default - to avoid exception
+	*/
 
 
 		if (url.pathname.startsWith("/secure")) {
 			const code = url.pathname.split("/")[2]?.toLowerCase();
 
-/* If Not Code (does not exist), or Country Code Not Valid, return 400 */
+	/* If Not Code (does not exist), or Country Code Not Valid, return 400 */
 
 			if (!code || !/^[A-Za-z]{2}$/.test(code)) {
 				return new Response("Invalid country Code", { status: 400 });
