@@ -107,4 +107,4 @@ To access your new R2 Bucket in your Worker, add the following snippet to your c
 
 		return new Response("Not Found", {status: 404});
 	},
-};
+	};
