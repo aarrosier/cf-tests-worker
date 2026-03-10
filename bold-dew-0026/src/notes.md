@@ -73,14 +73,14 @@ Set relevant headers in response
 If path is not exactly matching previous conditional... 
 If path name start with /secure   
 Do a split on / and extract the element from 2nd index (country code)
-If 2nd element (country code) exists, make it lowercase.
+If 2nd element (country code) exists (?) , make it lowercase else - set to default - to avoid exception
 */
 
 
 		if (url.pathname.startsWith("/secure")) {
 			const code = url.pathname.split("/")[2]?.toLowerCase();
 
-/* Run a simple check - is Country Code Valid? - if not return 400 */
+/* If Not Code (does not exist), or Country Code Not Valid, return 400 */
 
 			if (!code || !/^[A-Za-z]{2}$/.test(code)) {
 				return new Response("Invalid country Code", { status: 400 });
