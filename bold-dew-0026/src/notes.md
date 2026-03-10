@@ -26,3 +26,83 @@ To access your new R2 Bucket in your Worker, add the following snippet to your c
   ]
 }
 
+export default {
+	async fetch(request, env, ctx) {
+		const url = new URL(request.url);
+
+/* 
+
+Extract email 
+Country (cf variable)
+Timestamp
+
+*/ 
+		
+		const email = request.headers.get("cf-access-authenticated-user-email") || "unknown";
+		const country = request.cf?.country || "XX";
+		const timestamp = new Date().toISOString();
+
+
+
+
+/* 
+
+Match on /secure or /Secure/ 
+Built template literal string with required data... 
+Set relevant headers in response 
+*/ 
+
+
+		if (url.pathname === "/secure" || url.pathname === "/secure/") {
+			const html = `<!Doctype html>
+							<html><title>Secure Page</title>
+							<body>
+							<p>${email} authenticated at: ${timestamp} <br> From: <a href="/secure/${country}">${country}</a></p>
+							</body>
+							</html>`;
+			return new Response(html, {
+				headers: {
+					"content-type": "text/html; charset=UTF-8",
+				},
+			});
+		}
+
+
+/* 
+
+If path is not exactly matching previous conditional... 
+If path name start with /secure   
+Do a split on / and extract the element from 2nd index (country code)
+If 2nd element (country code) exists, make it lowercase.
+*/
+
+
+		if (url.pathname.startsWith("/secure")) {
+			const code = url.pathname.split("/")[2]?.toLowerCase();
+
+/* Run a simple check - is Country Code Valid? - if not return 400 */
+
+			if (!code || !/^[A-Za-z]{2}$/.test(code)) {
+				return new Response("Invalid country Code", { status: 400 });
+			}
+
+			const key = `${code}.svg`;
+			const object = await env.FLAGS_BUCKET.get(key);
+
+			if (!object) {
+				return new Response("Flag not found", {status: 404});
+			}
+
+			const headers = new Headers(); 
+			object.writeHttpMetadata(headers);
+
+			if (!headers.get("content-type")) {
+				headers.set("content-type", "image/svg+xml");
+			}
+
+			return new Response(object.body, { headers });
+		}
+
+		return new Response("Not Found", {status: 404});
+	},
+};
